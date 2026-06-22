@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crux Words</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crux Words">
+<meta name="theme-color" content="#13151a">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Crux+Words%22%2C%22short_name%22%3A%22Crux%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2313151a%22%2C%22theme_color%22%3A%22%2313151a%22%2C%22description%22%3A%22A+modern+crossword+tile+word+game%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg+xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527+viewBox%3D%25270+0+192+192%2527%253E%253Crect+width%3D%2527192%2527+height%3D%2527192%2527+rx%3D%252740%2527+fill%3D%2527%252313151a%2527%2F%253E%253Ctext+x%3D%252796%2527+y%3D%2527130%2527+font-size%3D%2527110%2527+text-anchor%3D%2527middle%2527+fill%3D%252714b8a6%2527%253E%25E2%259C%25A6%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --bg:        #13151a;
+  --surface:   #1e2229;
+  --surface2:  #272c35;
+  --border:    #333844;
+  --tile-bg:   #2e3340;
+  --tile-sel:  #3a4255;
+  --text:      #e8eaf0;
+  --text-dim:  #7a8299;
+  --amber:     #f59e0b;
+  --amber-dim: #b57a0a;
+  --teal:      #14b8a6;
+  --teal-dim:  #0e8a7c;
+  --red:       #ef4444;
+  --green:     #22c55e;
+
+  /* Premium square colours */
+  --tw: #14b8a6;   /* Triple Word  - teal */
+  --dw: #0e8a7c;   /* Double Word  - teal dim */
+  --tl: #f59e0b;   /* Triple Letter - amber */
+  --dl: #b57a0a;   /* Double Letter - amber dim */
+  --center: #14b8a6;
+
+  --radius-tile: 7px;
+  --radius-ui:   10px;
+  --shadow-tile: 0 3px 8px rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; width: 100%; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+/* ===== START SCREEN ===== */
+#start-screen {
+  justify-content: center;
+  min-height: 100vh;
+  gap: 48px;
+  padding: 40px;
+}
+
+.logo-block { text-align: center; }
+.logo-title {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--amber) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.logo-sub {
+  font-size: .9rem;
+  color: var(--text-dim);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.mode-cards {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.mode-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  width: 240px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, transform .15s, box-shadow .2s;
+}
+.mode-card:hover {
+  border-color: var(--teal);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(20,184,166,.18);
+}
+.mode-icon { font-size: 2.6rem; margin-bottom: 12px; }
+.mode-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+.mode-desc { font-size: .82rem; color: var(--text-dim); line-height: 1.5; }
+
+/* ===== PASS DEVICE SCREEN ===== */
+#pass-screen {
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 24px;
+  padding: 40px;
+  text-align: center;
+}
+#pass-screen h2 { font-size: 2rem; font-weight: 800; }
+#pass-screen p { color: var(--text-dim); max-width: 380px; line-height: 1.6; }
+.btn-primary {
+  background: var(--teal);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-ui);
+  padding: 14px 36px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.btn-primary:hover { background: #1fd5c2; transform: translateY(-1px); }
+.btn-primary:active { transform: none; }
+
+/* ===== GAME SCREEN ===== */
+#game-screen {
+  padding: 16px;
+  gap: 16px;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Header */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 900px;
+  gap: 12px;
+}
+.header-logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--teal), var(--amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+.score-panels {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.score-panel {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-ui);
+  padding: 8px 18px;
+  text-align: center;
+  min-width: 120px;
+  transition: border-color .3s;
+}
+.score-panel.active-player { border-color: var(--teal); box-shadow: 0 0 12px rgba(20,184,166,.2); }
+.score-name { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-dim); }
+.score-value { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+.bag-count { font-size: .78rem; color: var(--text-dim); text-align: center; white-space: nowrap; }
+
+/* Board container */
+.board-wrapper {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Board */
+#board {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 2px;
+  background: #0d0f13;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  width: min(90vw, 600px);
+  height: min(90vw, 600px);
+}
+.cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(7px, 1.2vw, 11px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  position: relative;
+  transition: filter .15s;
+  background: var(--surface2);
+  color: var(--text-dim);
+  user-select: none;
+}
+.cell:hover { filter: brightness(1.3); }
+.cell.tw { background: rgba(20,184,166,.2); color: var(--teal); box-shadow: inset 0 0 0 1px rgba(20,184,166,.3); }
+.cell.dw { background: rgba(14,138,124,.15); color: var(--teal-dim); box-shadow: inset 0 0 0 1px rgba(14,138,124,.25); }
+.cell.tl { background: rgba(245,158,11,.2); color: var(--amber); box-shadow: inset 0 0 0 1px rgba(245,158,11,.3); }
+.cell.dl { background: rgba(181,122,10,.15); color: var(--amber-dim); box-shadow: inset 0 0 0 1px rgba(181,122,10,.25); }
+.cell.star { background: rgba(20,184,166,.22); box-shadow: inset 0 0 0 1.5px var(--teal), 0 0 10px rgba(20,184,166,.3); }
+.cell.placed-tile { background: var(--tile-bg); color: var(--text); box-shadow: var(--shadow-tile); cursor: default; }
+.cell.placed-tile .tile-pts { color: var(--amber); }
+.cell.temp-tile { background: var(--teal-dim); color: #fff; box-shadow: var(--shadow-tile), 0 0 8px rgba(20,184,166,.4); cursor: pointer; }
+.cell.temp-tile .tile-pts { color: rgba(255,255,255,.7); }
+.cell.highlight-drop { box-shadow: inset 0 0 0 2px var(--teal); filter: brightness(1.4); }
+.tile-letter { font-size: clamp(8px, 1.5vw, 14px); font-weight: 800; line-height: 1; }
+.tile-pts { font-size: clamp(5px, .8vw, 8px); font-weight: 600; position: absolute; bottom: 1px; right: 2px; }
+
+/* Side panel */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 200px;
+}
+
+/* Rack */
+.rack-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-dim); margin-bottom: 2px; }
+.rack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-ui);
+  padding: 10px;
+  min-height: 54px;
+}
+.rack-tile {
+  width: 40px; height: 44px;
+  background: var(--tile-bg);
+  border-radius: var(--radius-tile);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  transition: transform .15s, box-shadow .15s, background .15s;
+  box-shadow: var(--shadow-tile);
+  position: relative;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.rack-tile:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,.6); }
+.rack-tile.selected { background: var(--teal-dim); box-shadow: 0 0 10px rgba(20,184,166,.5); transform: translateY(-4px); }
+.rack-tile.used { opacity: .35; pointer-events: none; }
+.rack-tile .pts { font-size: 8px; font-weight: 600; color: var(--amber); position: absolute; bottom: 2px; right: 3px; }
+
+/* Action buttons */
+.action-btns { display: flex; flex-direction: column; gap: 8px; }
+.btn-action {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-ui);
+  padding: 10px 12px;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .1s;
+  text-align: center;
+}
+.btn-action:hover { border-color: var(--teal); background: var(--surface2); transform: translateY(-1px); }
+.btn-action:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-play { background: var(--teal); border-color: var(--teal); color: #000; }
+.btn-play:hover { background: #1fd5c2; border-color: #1fd5c2; }
+.btn-swap-mode { border-color: var(--amber-dim); color: var(--amber); }
+.btn-swap-mode:hover { background: rgba(245,158,11,.1); border-color: var(--amber); }
+
+/* Status / message */
+.status-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-ui);
+  padding: 10px 12px;
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+  min-height: 52px;
+}
+.status-box.error { border-color: var(--red); color: var(--red); }
+.status-box.success { border-color: var(--green); color: var(--green); }
+.status-box.thinking { border-color: var(--teal); color: var(--teal); }
+
+/* Legend */
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: .7rem; color: var(--text-dim); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* Swap overlay */
+#swap-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+#swap-overlay.active { display: flex; }
+.swap-modal {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+}
+.swap-modal h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.swap-modal p { color: var(--text-dim); font-size: .85rem; margin-bottom: 18px; }
+.swap-rack { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-bottom: 20px; }
+.swap-tile {
+  width: 46px; height: 50px;
+  background: var(--tile-bg);
+  border-radius: var(--radius-tile);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px; font-weight: 800;
+  box-shadow: var(--shadow-tile);
+  border: 2px solid transparent;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+.swap-tile.sel { border-color: var(--amber); background: rgba(245,158,11,.15); }
+.swap-tile .pts { font-size: 9px; color: var(--amber); position: absolute; bottom: 2px; right: 3px; }
+.swap-btns { display: flex; gap: 10px; justify-content: center; }
+.btn-secondary {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-ui);
+  padding: 10px 20px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.btn-secondary:hover { border-color: var(--text-dim); }
+
+/* Blank tile modal */
+#blank-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(4px);
+  z-index: 110;
+  align-items: center;
+  justify-content: center;
+}
+#blank-overlay.active { display: flex; }
+.blank-modal {
+  background: var(--surface);
+  border: 1.5px solid var(--teal);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+}
+.blank-modal h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.blank-modal p { color: var(--text-dim); font-size: .85rem; margin-bottom: 18px; }
+.letter-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.letter-btn {
+  background: var(--tile-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 8px 4px;
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.letter-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
+
+/* End screen */
+#end-screen {
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 28px;
+  padding: 40px;
+  text-align: center;
+}
+#end-screen h2 { font-size: 2.2rem; font-weight: 800; }
+.end-scores {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.end-score-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 36px;
+  min-width: 160px;
+}
+.end-score-card.winner { border-color: var(--teal); box-shadow: 0 0 20px rgba(20,184,166,.25); }
+.end-score-card .p-name { font-size: .85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em; }
+.end-score-card .p-score { font-size: 2.8rem; font-weight: 900; }
+.winner-badge { font-size: .75rem; color: var(--teal); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
+
+/* Score flash — briefly highlights the panel after a successful play */
+@keyframes scoreFlash {
+  0%   { box-shadow: 0 0 0 2px var(--green), 0 0 18px rgba(34,197,94,.4); border-color: var(--green); }
+  70%  { box-shadow: 0 0 0 2px var(--green), 0 0 18px rgba(34,197,94,.4); border-color: var(--green); }
+  100% { box-shadow: none; border-color: var(--border); }
+}
+.score-panel.flash { animation: scoreFlash 2s ease forwards; }
+
+/* Thinking dots animation */
+@keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+.dot { display: inline-block; animation: blink 1.4s infinite both; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+
+/* Pulse on centre star */
+@keyframes starPulse { 0%{box-shadow:inset 0 0 0 1.5px var(--teal),0 0 10px rgba(20,184,166,.3)} 50%{box-shadow:inset 0 0 0 1.5px var(--teal),0 0 22px rgba(20,184,166,.6)} 100%{box-shadow:inset 0 0 0 1.5px var(--teal),0 0 10px rgba(20,184,166,.3)} }
+.cell.star { animation: starPulse 3s ease-in-out infinite; }
+.cell.star.placed-tile { animation: none; }
+</style>
+</head>
+<body>
+
+<!-- ===== START SCREEN ===== -->
+<div id="start-screen" class="screen active">
+  <div class="logo-block">
+    <div class="logo-title">Crux Words</div>
+    <div class="logo-sub">Crossword tile game</div>
+  </div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="startGame('ai')">
+      <div class="mode-icon">🤖</div>
+      <div class="mode-title">Solo vs Computer</div>
+      <div class="mode-desc">Face an AI opponent that searches for scoring plays.</div>
+    </div>
+    <div class="mode-card" onclick="startGame('2p')">
+      <div class="mode-icon">🎮</div>
+      <div class="mode-title">Local Two Player</div>
+      <div class="mode-desc">Pass the device between turns. Racks stay hidden.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PASS DEVICE SCREEN ===== -->
+<div id="pass-screen" class="screen">
+  <div style="font-size:3rem">🔄</div>
+  <h2 id="pass-title">Pass the device</h2>
+  <p id="pass-desc">Hand the device to the next player. Don't peek!</p>
+  <button class="btn-primary" onclick="resumeAfterPass()">I'm ready — show my tiles</button>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <div class="header-logo">Crux</div>
+    <div class="score-panels">
+      <div class="score-panel" id="p1-panel">
+        <div class="score-name" id="p1-name">Player 1</div>
+        <div class="score-value" id="p1-score">0</div>
+      </div>
+      <div class="score-panel" id="p2-panel">
+        <div class="score-name" id="p2-name">Computer</div>
+        <div class="score-value" id="p2-score">0</div>
+      </div>
+    </div>
+    <div class="bag-count">Bag: <span id="bag-count">100</span></div>
+  </div>
+
+  <div class="board-wrapper">
+    <!-- Board -->
+    <div id="board"></div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+      <div>
+        <div class="rack-label" id="rack-label">Your tiles</div>
+        <div class="rack" id="rack"></div>
+      </div>
+
+      <div class="action-btns">
+        <button class="btn-action btn-play" id="btn-play" onclick="playWord()">Play Word</button>
+        <button class="btn-action btn-swap-mode" id="btn-swap" onclick="openSwap()">Swap Tiles</button>
+        <button class="btn-action" id="btn-pass" onclick="passTurn()">Pass Turn</button>
+        <button class="btn-action" id="btn-recall" onclick="recallTiles()">Recall Tiles</button>
+      </div>
+
+      <div class="status-box" id="status-box">Select a tile from your rack, then tap a board square to place it.</div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(20,184,166,.5)"></div>Triple Word</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(14,138,124,.4)"></div>Double Word</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,.5)"></div>Triple Letter</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(181,122,10,.4)"></div>Double Letter</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== END SCREEN ===== -->
+<div id="end-screen" class="screen">
+  <div style="font-size:3rem">🏆</div>
+  <h2 id="end-title">Game Over</h2>
+  <div class="end-scores" id="end-scores"></div>
+  <button class="btn-primary" onclick="goHome()">New Game</button>
+</div>
+
+<!-- ===== SWAP OVERLAY ===== -->
+<div id="swap-overlay">
+  <div class="swap-modal">
+    <h3>Swap Tiles</h3>
+    <p>Select tiles to return to the bag. You'll draw the same number back.<br>This forfeits your turn.</p>
+    <div class="swap-rack" id="swap-rack"></div>
+    <div class="swap-btns">
+      <button class="btn-secondary" onclick="closeSwap()">Cancel</button>
+      <button class="btn-primary" id="btn-confirm-swap" onclick="confirmSwap()">Swap Selected</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BLANK TILE OVERLAY ===== -->
+<div id="blank-overlay">
+  <div class="blank-modal">
+    <h3>Choose a letter for the blank tile</h3>
+    <p>The blank tile scores 0 points regardless of which letter you choose.</p>
+    <div class="letter-grid" id="letter-grid"></div>
+  </div>
+</div>
+
+<script>
+// =============================================================
+//  CRUX WORDS — Complete Game Engine
+//  Sections:
+//    1. Constants & Data
+//    2. Game State
+//    3. Board Setup & Rendering
+//    4. Rack Management
+//    5. Tile Placement
+//    6. Word Validation (Dictionary API + fallback list)
+//    7. Scoring
+//    8. Turn Management
+//    9. AI Opponent
+//   10. UI Helpers
+//   11. Flow (start, end, pass-device)
+// =============================================================
+
+// ============================================================
+//  1. CONSTANTS & DATA
+// ============================================================
+
+const BOARD_SIZE = 15;
+const CENTER = 7; // 0-indexed centre square
+
+// Premium square layout (0-indexed row, col)
+// TW = Triple Word, DW = Double Word, TL = Triple Letter, DL = Double Letter
+const PREMIUM = (() => {
+  const p = {};
+  const set = (r, c, t) => { p[`${r},${c}`] = t; };
+
+  // Triple Word Scores
+  [[0,0],[0,7],[0,14],[7,0],[7,14],[14,0],[14,7],[14,14]].forEach(([r,c])=>set(r,c,'tw'));
+  // Double Word Scores (including centre = DW by standard rules, but centre is star)
+  [[1,1],[2,2],[3,3],[4,4],[1,13],[2,12],[3,11],[4,10],
+   [13,1],[12,2],[11,3],[10,4],[13,13],[12,12],[11,11],[10,10],
+   [7,7] /* centre */
+  ].forEach(([r,c])=>set(r,c,'dw'));
+  // Triple Letter Scores
+  [[1,5],[1,9],[5,1],[5,5],[5,9],[5,13],
+   [9,1],[9,5],[9,9],[9,13],[13,5],[13,9]].forEach(([r,c])=>set(r,c,'tl'));
+  // Double Letter Scores
+  [[0,3],[0,11],[2,6],[2,8],[3,0],[3,7],[3,14],
+   [6,2],[6,6],[6,8],[6,12],[7,3],[7,11],
+   [8,2],[8,6],[8,8],[8,12],[11,0],[11,7],[11,14],
+   [12,6],[12,8],[14,3],[14,11]].forEach(([r,c])=>set(r,c,'dl'));
+
+  return p;
+})();
+
+// Letter distribution: [letter, count, points]
+const LETTER_DATA = [
+  ['A',9,1],['B',2,3],['C',2,3],['D',4,2],['E',12,1],
+  ['F',2,4],['G',3,2],['H',2,4],['I',9,1],['J',1,8],
+  ['K',1,5],['L',4,1],['M',2,3],['N',6,1],['O',8,1],
+  ['P',2,3],['Q',1,10],['R',6,1],['S',4,1],['T',6,1],
+  ['U',4,1],['V',2,4],['W',2,4],['X',1,8],['Y',2,4],
+  ['Z',1,10],['_',2,0] // _ = blank
+];
+
+const LETTER_POINTS = {};
+LETTER_DATA.forEach(([l,,p]) => { LETTER_POINTS[l] = p; });
+LETTER_POINTS['_'] = 0;
+
+// Build the bag
+function makeBag() {
+  const bag = [];
+  LETTER_DATA.forEach(([l, count]) => {
+    for (let i = 0; i < count; i++) bag.push(l);
+  });
+  // Shuffle
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  return bag;
+}
+
+// Small fallback word list (common short words) used if API is unavailable
+// This covers the most common 2-8 letter words to allow offline play
+const FALLBACK_WORDS = new Set(`
+aa ab ad ae ag ah ai al am an ar as at aw ax ay
+ba be bi bo bu by
+da de di do
+ea ed ef eh el em en er es et ex
+fa fe fi fo
+ga gi go
+ha he hi hm ho
+id if in is it
+jo
+ka ki
+la li lo
+ma me mi mo mu my
+na ne no nu
+od oe of oh oi om on op or os ow ox oy
+pa pe pi po
+qi
+re
+sh si so
+ta te ti to
+uh um un up us ut
+we wo
+xi xu
+ya ye yo
+aah aal aas aba abo abs aby ace ach act add ado ads adz aff afs aga age ago ags aha ahi aid aim ain air ais ait aka ake alb ale alp alt ama ami amp amt amu ana and ane ani ant any ape app apt arb arc are arf ark arm art ash ask asp ass ate att auk ava ave avo awa awe awl awn axe aye ays
+baa bad bag bah ban bar bat bay bed bet bid big bin bit boa bob bog boo bop bot bow box boy bra bub bud bug bum bun bur bus but buy
+cab can cap car cat cay cob cod cog cop cor cos cot cow cox coy coz cub cud cup cur cut
+dab dad dam dap daw day deb dee den dev dew did dig din dip dis dit doe dog don dor dot dow dry dub dud due dug dun duo dyb dye
+ear eat eel egg ego eke elf elk elm ems emu end era eve ewe
+fad fag fan far fat fax fay fed fen few fez fib fig fin fir fit fix fob foe fog fon fop for fox foy fro fry fub fun fur
+gab gag gal gap gar gas gay gel gem get gib gig gin gnu gob god goo got gum gun gut guy gym gyp
+had ham has hat haw hay hen hep her hew hex hid him hip his hit hob hod hog hop hot how hoy hub hue hug hum hun hut
+ice icy ill imp ink inn ion ire irk ivy
+jab jag jam jar jaw jay jet jib jig job jot joy jug jut
+kab kae kaf kea keg kid kin kip kit
+lab lad lag lap law lax lay lea led leg let lid lie lip lit lob log loo lop lot low lug
+mac mad man map mar mat maw may men met mew mil mix mob mod mop mow mud mug mum
+nab nag nan nap nay nee net new nil nip nob nod nor not now nun nut
+oaf oak oar oat odd ode off oft ohm oil oka old one opt orb ore our out owe owl own
+pad pal pan pap par pat paw pay pea peg pen pep per pet pew pie pig pin pit ply pod pop pot pow pro pry pub pug pun pup pus put
+qua
+rag ram ran rap rat raw rax ray red ref rep rev rib rid rig rim rip rob rod roe rot row rub rue rug rum run rut rye
+sab sad sag sap sat saw say sea set sew sin sip sir sis sit ski sky sly sob sod son sop sot sow soy spa spy sty sub sue sum sun sup
+tab tad tan tap tar tat tau taw tax tea tee ten the thy tie tin tip toe too top toy try tub tug tun two
+ugh ump uni use
+van van vat vaw vex via vie vim vis vow
+wab wad wag wan war was wax way web wed wig win wit woe wog wok won woo wop wos wow
+yak yam yap yaw yea yen yep yes yet yew yin
+zap zed zee zen zig zip zit zoo
+able aces ache acid acme acre acne afar agar aged ages agog aide aids aims airs airy ajar akin alga also alum amok anew ante anti apex arch area aria arid army arts ashy atom avid avow away awed awls awry axle
+baby back bail bale ball balk balm band bane bare barf bark barn bars base bash bask bath bats bawl bead beam bean bear beat beck been beer beet bell belt best beth bide bile bill bind bird bite blot blow blue blur boar boat body bold bolt bond bone book boom boot boss both bout boxy brag bran brat bred brew brim buck
+cafe cage cake call calm came cane card care carp cart case cash cast cave cede cell chad chap char chia chip chop cite city claw clay clef clip clot cloy club clue coal coat code coil coin cola cold coma come cone cook cool cope cord core corn cost cozy crab cram
+dace dais dame dare dark dart data date dawn daze dead deal dean dear deed deem deep deer deft dell deny desk dill dime dine dire dirt disk dome done door dorm dose dote dove down drab drag draw drew drip drop drug drum duet dull duly dune dusk dust
+each earl earn ease east easy edge edit eels else emit emit ends even ewer ewes eyes
+face fact fade fail fair fall fame fang fare farm fast fate fawn fear feat feel feet fell felt fern fiat file fill film find fine fire fish fist flag flat flaw flea fled flew flit flow foam fold fond font fore fork form fort foul four fowl fray fret from fuel full
+gain gale gall gape gash gate gave gaze gear geld gelt germ gibe gild gilt give glad gland glare glen glib glob glow glue glum gnar goad goat golf good gore gory gown grab gram gray grew grin grip grit grub gulf gull gust
+hack hail hair hale half hall halt halt hand hang hard hare harm harp haze head heal heap hear heat heel held helm help hemp here hero hive hoax hobo hole holy home hone hood hook hoop hope horn hose host hour huge hull hunt husk hype
+ibex icky icon idle itch
+jabs jags jails jams jars jaws jest jibe jigs jobs jolt jots jowl joys
+keen kelp kept kern kind king kiss kite knob knot know
+lack lake lame lamp land lane lash laud lawn lazy lead leaf leak leap left lend lens lest levy liar lick lift lime limp line link lint lira list live loam loan loch lock loft lone loop lore lorn loth lour love lump lure lure lurk lute lyse
+mace made mail main make male malt many mare mark mars mart mash mask mast mate maze mead meal mean meat meet melt memo mend meow mess mild mile milk mill mime mind mint mire mist moan moat mode mold mole molt monk moon moor more moss mote moth mound move much mull muse musk mutt
+nail name nape navy nary neat neck need nest nice nigh node noir nope norm nose noun
+oboe odds offs omen once only open orca orgy otic otto ours oust over ovum
+pace pack pads page paid pain pair pale pall palm pant peel peer pelt pest phew pike pile pill pine pink pint pion pipe plod plow plug plum plus poem poet poke pole poll polo poly pond pore pork port pose posh post pounce pour prey prim prod prop prude prune puff pull pulp pump pyre
+quip quiz
+race rack raft rage raid rail rain rake ramp rank rant rave read real reap reed reel rein rely rend rent rest rice rich rick ride rife rift ring riot ripe risk road roam roar robe rock rode role roll rope rote rout rove rude rule rump rush rust
+sack safe saga sage said sail sake sale salt same sand sane sang sank sash save scam scan scar scud seam sear seat sect seed seep self sell semi send sewn sexy shed shin ship shoe shod shop shot shun shut sick side sigh silk sill silo silt sinc sink site size skip slam slap slat slay slim slob slop slue slum slur smug snap snip soar sofa soft soil sold sole some song soot sore soup sour sown span spar span spat spin spit spot spud spur stab stag star stay stem step stew stir stop stow stub stud stun style sung sunk sure surf swab swam swap sway swim swum
+tack tail take talc tale tall tame tamp tamp tarp tart task taut teal team tear teem tell tilt time tirp toad told toll tomb tome tone tong tore torn toss tour town tram trap tray tree trim trio trip trod trod true truce tuck tuft tuft tulip tun turn tusk tutu twin twit type
+ugly unit unto upon urge
+vale vale vamp vary vats veal veer vein vent veto view vile viol visa void volt vote
+wade waft wage wail wait wake wale wand wane ward ware warm warn wary wave wavy weak weal wean weep weld well welt wend went west whim whip whit whom wick wild will wilt wily wind wine wing wink wire wise wish wisp woke wolf wood wool word wore worm worn wove
+yank yard yarn yawn yore your yule
+zeal zero zest zinc zone zoom
+`.trim().split(/\s+/).filter(w => w.length >= 2));
+
+// ============================================================
+//  2. GAME STATE
+// ============================================================
+let gameMode = 'ai'; // 'ai' | '2p'
+let board = [];         // 15x15 array of {letter, isBlank, points} or null
+let bag = [];
+let players = [
+  { name: 'Player 1', score: 0, rack: [] },
+  { name: 'Computer',  score: 0, rack: [] }
+];
+let currentPlayer = 0;
+let consecutivePasses = 0;
+let gameOver = false;
+let isFirstWord = true;
+
+// Tiles currently placed on board this turn (not yet committed)
+let tempPlacements = []; // [{row, col, letter, isBlank, points}]
+let selectedRackIndex = -1;
+let blankPendingPlacement = null; // {row, col}
+
+// ============================================================
+//  3. BOARD SETUP & RENDERING
+// ============================================================
+
+function initBoard() {
+  board = [];
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    board.push(new Array(BOARD_SIZE).fill(null));
+  }
+}
+
+function buildBoardDOM() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.onclick = () => handleCellClick(r, c);
+
+      // Premium class
+      const key = `${r},${c}`;
+      if (r === CENTER && c === CENTER) {
+        cell.classList.add('star');
+        cell.innerHTML = '<span style="font-size:clamp(8px,1.3vw,13px)">★</span>';
+      } else if (PREMIUM[key]) {
+        cell.classList.add(PREMIUM[key]);
+        const labels = {tw:'TW',dw:'DW',tl:'TL',dl:'DL'};
+        cell.textContent = labels[PREMIUM[key]];
+      }
+
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function renderBoard() {
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const cell = getCellEl(r, c);
+      const t = board[r][c];
+      const temp = tempPlacements.find(p => p.row === r && p.col === c);
+
+      // Always reset class AND innerHTML first — prevents ghost content on recall
+      cell.className = 'cell';
+      cell.innerHTML = '';
+
+      if (temp) {
+        cell.classList.add('temp-tile');
+        cell.innerHTML = `<span class="tile-letter">${temp.letter}</span><span class="tile-pts">${temp.points}</span>`;
+      } else if (t) {
+        cell.classList.add('placed-tile');
+        cell.innerHTML = `<span class="tile-letter">${t.letter}</span><span class="tile-pts">${t.points}</span>`;
+      } else {
+        // Restore premium square label for empty cells
+        const key = `${r},${c}`;
+        if (r === CENTER && c === CENTER) {
+          cell.classList.add('star');
+          cell.innerHTML = '<span style="font-size:clamp(8px,1.3vw,13px)">★</span>';
+        } else if (PREMIUM[key]) {
+          cell.classList.add(PREMIUM[key]);
+          const labels = {tw:'TW',dw:'DW',tl:'TL',dl:'DL'};
+          cell.textContent = labels[PREMIUM[key]];
+        }
+      }
+    }
+  }
+}
+
+function getCellEl(r, c) {
+  return document.querySelector(`#board .cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+// ============================================================
+//  4. RACK MANAGEMENT
+// ============================================================
+
+function drawTiles(playerIdx) {
+  const rack = players[playerIdx].rack;
+  while (rack.length < 7 && bag.length > 0) {
+    rack.push(bag.pop());
+  }
+}
+
+function renderRack() {
+  const rack = players[currentPlayer].rack;
+  const el = document.getElementById('rack');
+  el.innerHTML = '';
+  rack.forEach((letter, i) => {
+    const isUsed = tempPlacements.some(p => p.rackIdx === i);
+    const tile = document.createElement('div');
+    tile.className = 'rack-tile' + (isUsed ? ' used' : '') + (selectedRackIndex === i ? ' selected' : '');
+    tile.dataset.idx = i;
+    const displayLetter = letter === '_' ? '?' : letter;
+    const pts = LETTER_POINTS[letter] ?? 0;
+    tile.innerHTML = `${displayLetter}<span class="pts">${pts}</span>`;
+    tile.onclick = () => selectRackTile(i);
+    el.appendChild(tile);
+  });
+}
+
+function selectRackTile(idx) {
+  const rack = players[currentPlayer].rack;
+  if (tempPlacements.some(p => p.rackIdx === idx)) return; // already placed
+  selectedRackIndex = (selectedRackIndex === idx) ? -1 : idx;
+  renderRack();
+}
+
+// ============================================================
+//  5. TILE PLACEMENT
+// ============================================================
+
+function handleCellClick(r, c) {
+  if (gameOver) return;
+  if (currentPlayer === 1 && gameMode === 'ai') return; // AI turn
+
+  const existingTemp = tempPlacements.findIndex(p => p.row === r && p.col === c);
+  const existingPerm = board[r][c];
+
+  // Click on a temp tile = recall it
+  if (existingTemp !== -1) {
+    recallSingleTile(existingTemp);
+    return;
+  }
+  // Can't place on permanent tile
+  if (existingPerm) {
+    setStatus('That square is already occupied.', 'error');
+    return;
+  }
+  // Need a tile selected
+  if (selectedRackIndex === -1) {
+    setStatus('Select a tile from your rack first.', 'error');
+    return;
+  }
+
+  const rack = players[currentPlayer].rack;
+  const letter = rack[selectedRackIndex];
+
+  if (letter === '_') {
+    // Show blank chooser
+    blankPendingPlacement = { row: r, col: c, rackIdx: selectedRackIndex };
+    openBlankChooser();
+    return;
+  }
+
+  placeTile(r, c, letter, selectedRackIndex, false, LETTER_POINTS[letter]);
+}
+
+function placeTile(r, c, letter, rackIdx, isBlank, pts) {
+  tempPlacements.push({ row: r, col: c, letter, rackIdx, isBlank, points: isBlank ? 0 : pts });
+  selectedRackIndex = -1;
+  renderBoard();
+  renderRack();
+  setStatus(`Placed ${letter} at (${r+1},${c+1}). Continue placing or click Play Word.`);
+}
+
+function recallSingleTile(tempIdx) {
+  tempPlacements.splice(tempIdx, 1);
+  selectedRackIndex = -1;
+  renderBoard();
+  renderRack();
+  setStatus('Tile recalled.');
+}
+
+function recallTiles() {
+  tempPlacements = [];
+  selectedRackIndex = -1;
+  renderBoard();
+  renderRack();
+  setStatus('All tiles recalled.');
+}
+
+// ============================================================
+//  6. WORD VALIDATION
+// ============================================================
+
+// Dictionary API with fallback
+async function isValidWord(word) {
+  word = word.toUpperCase();
+  if (word.length < 2) return false;
+
+  // Check fallback list first (fast path for common words)
+  if (FALLBACK_WORDS.has(word.toLowerCase())) return true;
+
+  // Try the free dictionary API
+  try {
+    const resp = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`,
+      { signal: AbortSignal.timeout(3000) }
+    );
+    if (resp.ok) return true;
+    if (resp.status === 404) return false;
+    // On rate limit or other error, fall back to word list
+    return FALLBACK_WORDS.has(word.toLowerCase());
+  } catch {
+    return FALLBACK_WORDS.has(word.toLowerCase());
+  }
+}
+
+// Get all words formed by the current temp placement
+// Returns array of {word, cells:[{r,c}]} or null if placement is invalid (not in line, not connected)
+function getFormedWords() {
+  if (tempPlacements.length === 0) return null;
+
+  // Check all temps are in same row or same column
+  const rows = [...new Set(tempPlacements.map(p => p.row))];
+  const cols = [...new Set(tempPlacements.map(p => p.col))];
+
+  if (rows.length > 1 && cols.length > 1) return null; // Not aligned
+
+  // Build merged board (permanent + temp)
+  const merged = board.map(row => row.map(cell => cell ? {...cell} : null));
+  tempPlacements.forEach(p => {
+    merged[p.row][p.col] = { letter: p.letter, points: p.points, isBlank: p.isBlank };
+  });
+
+  const words = [];
+
+  const getWord = (cells) => {
+    return cells.map(([r,c]) => merged[r][c].letter).join('');
+  };
+
+  // Scan a row for words containing given cells
+  const scanRow = (r, mustInclude) => {
+    let start = 0;
+    while (start < BOARD_SIZE) {
+      if (!merged[r][start]) { start++; continue; }
+      let end = start;
+      while (end < BOARD_SIZE && merged[r][end]) end++;
+      if (end - start >= 2) {
+        const cells = [];
+        for (let c = start; c < end; c++) cells.push([r, c]);
+        const includes = mustInclude.some(([mr, mc]) => mr === r && mc >= start && mc < end);
+        if (includes) words.push({ word: getWord(cells), cells });
+      }
+      start = end;
+    }
+  };
+
+  const scanCol = (c, mustInclude) => {
+    let start = 0;
+    while (start < BOARD_SIZE) {
+      if (!merged[start][c]) { start++; continue; }
+      let end = start;
+      while (end < BOARD_SIZE && merged[end][c]) end++;
+      if (end - start >= 2) {
+        const cells = [];
+        for (let r = start; r < end; r++) cells.push([r, c]);
+        const includes = mustInclude.some(([mr, mc]) => mc === c && mr >= start && mr < end);
+        if (includes) words.push({ word: getWord(cells), cells });
+      }
+      start = end;
+    }
+  };
+
+  const mustInclude = tempPlacements.map(p => [p.row, p.col]);
+
+  if (rows.length === 1) {
+    // Primary word is horizontal
+    scanRow(rows[0], mustInclude);
+    // Cross-words are vertical, one per temp tile
+    tempPlacements.forEach(p => scanCol(p.col, [[p.row, p.col]]));
+  } else {
+    // Primary word is vertical
+    scanCol(cols[0], mustInclude);
+    // Cross-words are horizontal
+    tempPlacements.forEach(p => scanRow(p.row, [[p.row, p.col]]));
+  }
+
+  // Deduplicate
+  const seen = new Set();
+  return words.filter(w => {
+    const key = w.word + w.cells[0].join(',');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Check first-word rule: must cover centre
+function coversCenter() {
+  return tempPlacements.some(p => p.row === CENTER && p.col === CENTER);
+}
+
+// Check connectivity: every temp tile must be adjacent to a permanent tile
+// OR it's the first word (only rule is covers centre)
+function isConnected() {
+  if (isFirstWord) return coversCenter();
+  // At least one temp tile must touch a permanent tile
+  const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+  for (const p of tempPlacements) {
+    for (const [dr, dc] of dirs) {
+      const nr = p.row + dr, nc = p.col + dc;
+      if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+        if (board[nr][nc]) return true;
+        // Also count other temp tiles as bridges to perm tiles
+      }
+    }
+  }
+  return false;
+}
+
+// Check that there are no gaps in the line of placement
+function hasNoGaps() {
+  if (tempPlacements.length <= 1) return true;
+  const rows = [...new Set(tempPlacements.map(p => p.row))];
+  const cols = [...new Set(tempPlacements.map(p => p.col))];
+
+  if (rows.length === 1) {
+    const r = rows[0];
+    const minC = Math.min(...cols), maxC = Math.max(...cols);
+    for (let c = minC; c <= maxC; c++) {
+      const inTemp = tempPlacements.some(p => p.row === r && p.col === c);
+      const inBoard = !!board[r][c];
+      if (!inTemp && !inBoard) return false;
+    }
+  } else {
+    const c = cols[0];
+    const minR = Math.min(...tempPlacements.map(p => p.row));
+    const maxR = Math.max(...tempPlacements.map(p => p.row));
+    for (let r = minR; r <= maxR; r++) {
+      const inTemp = tempPlacements.some(p => p.row === r && p.col === c);
+      const inBoard = !!board[r][c];
+      if (!inTemp && !inBoard) return false;
+    }
+  }
+  return true;
+}
+
+// ============================================================
+//  7. SCORING
+// ============================================================
+
+function scoreWord(wordCells) {
+  // wordCells: [{r,c}] referring to merged board (perm + temp)
+  let letterSum = 0;
+  let wordMult = 1;
+
+  for (const [r, c] of wordCells) {
+    const isTemp = tempPlacements.some(p => p.row === r && p.col === c);
+    const cellData = board[r][c] || tempPlacements.find(p => p.row === r && p.col === c);
+    const pts = cellData.points;
+
+    if (isTemp) {
+      const key = `${r},${c}`;
+      const prem = PREMIUM[key];
+      if (prem === 'tl') letterSum += pts * 3;
+      else if (prem === 'dl') letterSum += pts * 2;
+      else letterSum += pts;
+
+      if (prem === 'tw') wordMult *= 3;
+      else if (prem === 'dw' || (r === CENTER && c === CENTER)) wordMult *= 2;
+    } else {
+      letterSum += pts;
+    }
+  }
+  return letterSum * wordMult;
+}
+
+function scoreTurn(formedWords) {
+  let total = 0;
+  for (const w of formedWords) {
+    total += scoreWord(w.cells);
+  }
+  // Bingo bonus: 50 points for using all 7 tiles
+  if (tempPlacements.length === 7) total += 50;
+  return total;
+}
+
+// ============================================================
+//  8. TURN MANAGEMENT
+// ============================================================
+
+async function playWord() {
+  if (tempPlacements.length === 0) {
+    setStatus('Place at least one tile first.', 'error');
+    return;
+  }
+
+  const rows = [...new Set(tempPlacements.map(p => p.row))];
+  const cols = [...new Set(tempPlacements.map(p => p.col))];
+  if (rows.length > 1 && cols.length > 1) {
+    setStatus('Tiles must be placed in a single row or column.', 'error');
+    return;
+  }
+  if (!hasNoGaps()) {
+    setStatus('There are gaps in your word. Fill them in or recall tiles.', 'error');
+    return;
+  }
+  if (!isConnected()) {
+    if (isFirstWord) setStatus('The first word must cover the centre star (★).', 'error');
+    else setStatus('Your word must connect to tiles already on the board.', 'error');
+    return;
+  }
+
+  const formedWords = getFormedWords();
+  if (!formedWords || formedWords.length === 0) {
+    setStatus('No valid word pattern found. Check your placement.', 'error');
+    return;
+  }
+
+  setStatus('<span>Checking words<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>', 'thinking');
+  disableActions(true);
+
+  const invalids = [];
+  for (const w of formedWords) {
+    const valid = await isValidWord(w.word);
+    if (!valid) invalids.push(w.word);
+  }
+  disableActions(false);
+
+  if (invalids.length > 0) {
+    setStatus(`Invalid word(s): <strong>${invalids.join(', ')}</strong>. Recall tiles and try again.`, 'error');
+    return;
+  }
+
+  // Commit
+  const usedRackIdxs = new Set(tempPlacements.map(p => p.rackIdx));
+  tempPlacements.forEach(p => {
+    board[p.row][p.col] = { letter: p.letter, points: p.points, isBlank: p.isBlank };
+  });
+
+  const turnScore = scoreTurn(formedWords);
+  players[currentPlayer].score += turnScore;
+  consecutivePasses = 0;
+  isFirstWord = false;
+
+  const wordList = formedWords.map(w => w.word).join(', ');
+  setStatus(`✓ ${wordList} · +${turnScore} pts${tempPlacements.length === 7 ? ' (BINGO +50!)' : ''}`, 'success');
+
+  tempPlacements = [];
+  selectedRackIndex = -1;
+
+  // Remove used rack tiles
+  const rack = players[currentPlayer].rack;
+  const newRack = rack.filter((_, i) => !usedRackIdxs.has(i));
+  players[currentPlayer].rack = newRack;
+
+  renderBoard();
+  updateScoreUI();
+  finishTurn(true); // human just played — show score for 2s before AI starts
+}
+
+function passTurn() {
+  recallTiles();
+  consecutivePasses++;
+  setStatus('Turn passed.');
+  if (consecutivePasses >= 4) {
+    endGame();
+    return;
+  }
+  finishTurn();
+}
+
+async function finishTurn(humanJustPlayed = false) {
+  drawTiles(currentPlayer);
+  renderRack();
+  updateScoreUI();
+  renderBoard();
+  updateBagCount();
+
+  // Check if current player emptied rack and bag is empty
+  if (players[currentPlayer].rack.length === 0 && bag.length === 0) {
+    endGame();
+    return;
+  }
+
+  if (humanJustPlayed && gameMode === 'ai') {
+    // Flash the human score panel green; keep it "active" for 2s so the
+    // new score is clearly readable before the computer takes over.
+    const panel = document.getElementById('p1-panel');
+    panel.classList.remove('flash');
+    void panel.offsetWidth; // force reflow to restart animation
+    panel.classList.add('flash');
+    // Keep board disabled during the 2s pause
+    disableActions(true);
+    setTimeout(() => {
+      panel.classList.remove('flash');
+      disableActions(false);
+      currentPlayer = 1;
+      updateActivePlayerUI();
+      aiTakeTurn();
+    }, 2000);
+  } else {
+    // Switch player immediately for pass / swap / 2P
+    currentPlayer = 1 - currentPlayer;
+    updateActivePlayerUI();
+    if (gameMode === '2p') {
+      showPassScreen();
+    } else if (currentPlayer === 1) {
+      setTimeout(aiTakeTurn, 700);
+    }
+  }
+}
+
+// ============================================================
+//  9. AI OPPONENT
+// ============================================================
+
+// The AI scans for playable words from its rack on the board.
+// Strategy: tries horizontal and vertical placements at every occupied row/col
+// and every anchor square (adjacent to placed tiles), picks highest scorer.
+
+async function aiTakeTurn() {
+  setStatus('<span>Computer is thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>', 'thinking');
+  disableActions(true);
+
+  // Small delay for UX
+  await sleep(600 + Math.random() * 800);
+
+  const bestPlay = findBestAIPlay();
+
+  if (!bestPlay) {
+    // Try to swap some tiles if bag has enough
+    if (bag.length >= 7) {
+      const swapCount = Math.ceil(players[1].rack.length / 2);
+      const idxs = players[1].rack.map((_,i)=>i).slice(0, swapCount);
+      doSwap(1, idxs);
+      setStatus(`Computer swapped ${swapCount} tile(s).`);
+    } else {
+      consecutivePasses++;
+      setStatus('Computer passed.');
+      if (consecutivePasses >= 4) { disableActions(false); endGame(); return; }
+    }
+    drawTiles(1);
+    updateScoreUI();
+    updateBagCount();
+    currentPlayer = 0;
+    updateActivePlayerUI();
+    disableActions(false);
+    renderRack();
+    renderBoard();
+    return;
+  }
+
+  // Commit AI play
+  const { placements, score, words } = bestPlay;
+  const usedIdxs = new Set(placements.map(p => p.rackIdx));
+  placements.forEach(p => {
+    board[p.row][p.col] = { letter: p.letter, points: p.points, isBlank: false };
+  });
+  players[1].score += score;
+  consecutivePasses = 0;
+  isFirstWord = false;
+
+  const newRack = players[1].rack.filter((_,i) => !usedIdxs.has(i));
+  players[1].rack = newRack;
+  drawTiles(1);
+
+  updateScoreUI();
+  updateBagCount();
+  renderBoard();
+
+  setStatus(`Computer played: ${words.join(', ')} · +${score} pts`);
+
+  if (players[1].rack.length === 0 && bag.length === 0) {
+    disableActions(false);
+    endGame();
+    return;
+  }
+
+  currentPlayer = 0;
+  updateActivePlayerUI();
+  disableActions(false);
+  renderRack();
+}
+
+// Find the best play for the AI
+function findBestAIPlay() {
+  const rack = players[1].rack;
+  if (rack.length === 0) return null;
+
+  let bestScore = 0;
+  let bestPlay = null;
+
+  // Get anchor squares: empty squares adjacent to occupied squares
+  // (or the centre if first word)
+  const anchors = getAnchors();
+
+  // Try placing each subset of the rack as words
+  // For performance: try common words from dictionary that fit the rack
+  const candidateWords = getCandidateWords(rack);
+
+  for (const { word, rackIdxs } of candidateWords) {
+    for (const [ar, ac] of anchors) {
+      // Try horizontal
+      for (let startC = Math.max(0, ac - word.length + 1); startC <= ac && startC + word.length - 1 < BOARD_SIZE; startC++) {
+        const play = tryAIPlace(word, rackIdxs, ar, startC, 0, 1, rack);
+        if (play && play.score > bestScore) {
+          bestScore = play.score;
+          bestPlay = play;
+        }
+      }
+      // Try vertical
+      for (let startR = Math.max(0, ar - word.length + 1); startR <= ar && startR + word.length - 1 < BOARD_SIZE; startR++) {
+        const play = tryAIPlace(word, rackIdxs, startR, ac, 1, 0, rack);
+        if (play && play.score > bestScore) {
+          bestScore = play.score;
+          bestPlay = play;
+        }
+      }
+    }
+  }
+
+  return bestPlay;
+}
+
+function getAnchors() {
+  if (isFirstWord) return [[CENTER, CENTER]];
+  const anchors = [];
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c]) continue;
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+      for (const [dr,dc] of dirs) {
+        const nr = r+dr, nc = c+dc;
+        if (nr>=0&&nr<BOARD_SIZE&&nc>=0&&nc<BOARD_SIZE&&board[nr][nc]) {
+          anchors.push([r,c]);
+          break;
+        }
+      }
+    }
+  }
+  return anchors;
+}
+
+// Build candidate words from rack letters
+function getCandidateWords(rack) {
+  const letters = rack.map(l => l === '_' ? null : l); // null = blank
+  const result = [];
+  const seen = new Set();
+
+  for (const w of FALLBACK_WORDS) {
+    const up = w.toUpperCase();
+    if (up.length < 2 || up.length > rack.length) continue;
+    if (seen.has(up)) continue;
+
+    // Check if rack can form this word
+    const rackCopy = [...letters];
+    const rackIdxs = [];
+    let ok = true;
+    for (const ch of up) {
+      const idx = rackCopy.indexOf(ch);
+      if (idx !== -1) { rackIdxs.push(idx); rackCopy[idx] = null; }
+      else {
+        // Try blank
+        const bi = rackCopy.indexOf(null);
+        if (bi !== -1) { rackIdxs.push(bi); rackCopy[bi] = undefined; }
+        else { ok = false; break; }
+      }
+    }
+    if (ok) { seen.add(up); result.push({ word: up, rackIdxs }); }
+  }
+
+  return result;
+}
+
+// Try to place a word at (startR, startC) going (dr, dc)
+// Returns play object or null if invalid
+function tryAIPlace(word, rackIdxs, startR, startC, dr, dc, rack) {
+  // Check bounds
+  const endR = startR + dr * (word.length - 1);
+  const endC = startC + dc * (word.length - 1);
+  if (endR >= BOARD_SIZE || endC >= BOARD_SIZE) return null;
+
+  const placements = [];
+  let rackIdxPtr = 0;
+
+  for (let i = 0; i < word.length; i++) {
+    const r = startR + dr * i;
+    const c = startC + dc * i;
+    const needed = word[i];
+    const existing = board[r][c];
+    if (existing) {
+      if (existing.letter !== needed) return null; // Conflict
+    } else {
+      if (rackIdxPtr >= rackIdxs.length) return null;
+      const rIdx = rackIdxs[rackIdxPtr++];
+      placements.push({ row: r, col: c, letter: needed, rackIdx: rIdx, points: LETTER_POINTS[needed] ?? 0, isBlank: rack[rIdx] === '_' });
+    }
+  }
+
+  if (placements.length === 0) return null; // Word is already on board
+
+  // Validate connectivity and rules using temp approach
+  const savedTemp = [...tempPlacements];
+  tempPlacements = placements;
+
+  if (!isConnected()) { tempPlacements = savedTemp; return null; }
+  if (!hasNoGaps()) { tempPlacements = savedTemp; return null; }
+
+  const formedWords = getFormedWords();
+  tempPlacements = savedTemp;
+
+  if (!formedWords || formedWords.length === 0) return null;
+
+  // Quick validate: primary word must be `word`, all other cross-words must be in fallback list
+  for (const fw of formedWords) {
+    if (!FALLBACK_WORDS.has(fw.word.toLowerCase())) return null;
+  }
+
+  // Score
+  const savedTemp2 = [...tempPlacements];
+  tempPlacements = placements;
+  const score = scoreTurn(formedWords);
+  tempPlacements = savedTemp2;
+
+  return { placements, score, words: formedWords.map(w => w.word) };
+}
+
+// ============================================================
+//  10. UI HELPERS
+// ============================================================
+
+function setStatus(msg, type = '') {
+  const el = document.getElementById('status-box');
+  el.className = 'status-box' + (type ? ` ${type}` : '');
+  el.innerHTML = msg;
+}
+
+function disableActions(disabled) {
+  ['btn-play','btn-swap','btn-pass','btn-recall'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = disabled;
+  });
+}
+
+function updateScoreUI() {
+  document.getElementById('p1-score').textContent = players[0].score;
+  document.getElementById('p2-score').textContent = players[1].score;
+}
+
+function updateBagCount() {
+  document.getElementById('bag-count').textContent = bag.length;
+}
+
+function updateActivePlayerUI() {
+  document.getElementById('p1-panel').classList.toggle('active-player', currentPlayer === 0);
+  document.getElementById('p2-panel').classList.toggle('active-player', currentPlayer === 1);
+  document.getElementById('rack-label').textContent =
+    gameMode === '2p' ? `${players[currentPlayer].name}'s tiles` : 'Your tiles';
+}
+
+// Swap overlay
+function openSwap() {
+  if (bag.length === 0) { setStatus('The bag is empty — you can\'t swap tiles.', 'error'); return; }
+  recallTiles();
+  const rack = players[currentPlayer].rack;
+  const swapRack = document.getElementById('swap-rack');
+  swapRack.innerHTML = '';
+  rack.forEach((letter, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'swap-tile';
+    tile.dataset.idx = i;
+    const displayLetter = letter === '_' ? '?' : letter;
+    tile.innerHTML = `${displayLetter}<span class="pts">${LETTER_POINTS[letter] ?? 0}</span>`;
+    tile.onclick = () => tile.classList.toggle('sel');
+    swapRack.appendChild(tile);
+  });
+  document.getElementById('swap-overlay').classList.add('active');
+}
+
+function closeSwap() {
+  document.getElementById('swap-overlay').classList.remove('active');
+}
+
+function confirmSwap() {
+  const selected = [...document.querySelectorAll('#swap-rack .swap-tile.sel')];
+  if (selected.length === 0) { closeSwap(); return; }
+  if (selected.length > bag.length) {
+    alert('Not enough tiles in the bag to swap that many.'); return;
+  }
+  const idxs = selected.map(el => parseInt(el.dataset.idx));
+  doSwap(currentPlayer, idxs);
+  closeSwap();
+  consecutivePasses++;
+  setStatus(`Swapped ${idxs.length} tile(s).`);
+  if (consecutivePasses >= 4) { endGame(); return; }
+  finishTurn();
+}
+
+function doSwap(playerIdx, idxs) {
+  const rack = players[playerIdx].rack;
+  const returned = idxs.map(i => rack[i]);
+  players[playerIdx].rack = rack.filter((_, i) => !idxs.includes(i));
+  // Put returned tiles back in bag and reshuffle
+  returned.forEach(l => bag.push(l));
+  for (let i = bag.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [bag[i],bag[j]] = [bag[j],bag[i]];
+  }
+  drawTiles(playerIdx);
+}
+
+// Blank chooser
+function openBlankChooser() {
+  const grid = document.getElementById('letter-grid');
+  grid.innerHTML = '';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = 'letter-btn';
+    btn.textContent = ch;
+    btn.onclick = () => chooseBlankLetter(ch);
+    grid.appendChild(btn);
+  });
+  document.getElementById('blank-overlay').classList.add('active');
+}
+
+function chooseBlankLetter(letter) {
+  document.getElementById('blank-overlay').classList.remove('active');
+  if (!blankPendingPlacement) return;
+  const { row, col, rackIdx } = blankPendingPlacement;
+  blankPendingPlacement = null;
+  selectedRackIndex = rackIdx; // restore for placement
+  placeTile(row, col, letter, rackIdx, true, 0);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+//  11. FLOW
+// ============================================================
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame(mode) {
+  gameMode = mode;
+  gameOver = false;
+  isFirstWord = true;
+  consecutivePasses = 0;
+  tempPlacements = [];
+  selectedRackIndex = -1;
+
+  players = [
+    { name: 'Player 1', score: 0, rack: [] },
+    { name: mode === 'ai' ? 'Computer' : 'Player 2', score: 0, rack: [] }
+  ];
+
+  document.getElementById('p1-name').textContent = players[0].name;
+  document.getElementById('p2-name').textContent = players[1].name;
+
+  bag = makeBag();
+  initBoard();
+  buildBoardDOM();
+
+  drawTiles(0);
+  drawTiles(1);
+
+  currentPlayer = 0;
+
+  updateScoreUI();
+  updateBagCount();
+  updateActivePlayerUI();
+  renderRack();
+  renderBoard();
+  setStatus('Select a tile from your rack, then tap a square to place it. First word must cover ★.');
+  disableActions(false);
+
+  showScreen('game-screen');
+}
+
+function showPassScreen() {
+  const next = players[currentPlayer].name;
+  document.getElementById('pass-title').textContent = `Pass to ${next}`;
+  document.getElementById('pass-desc').textContent =
+    `Hand the device to ${next}. Don't peek at the other player's tiles!`;
+  showScreen('pass-screen');
+}
+
+function resumeAfterPass() {
+  showScreen('game-screen');
+  renderRack();
+  updateActivePlayerUI();
+  setStatus(`${players[currentPlayer].name}'s turn. Select a tile and place it on the board.`);
+}
+
+function endGame() {
+  gameOver = true;
+  // Final scoring: subtract unplayed tiles from rack
+  players.forEach(p => {
+    const penalty = p.rack.reduce((sum, l) => sum + (LETTER_POINTS[l] ?? 0), 0);
+    p.score = Math.max(0, p.score - penalty);
+  });
+
+  updateScoreUI();
+
+  const winner = players[0].score > players[1].score ? 0
+               : players[1].score > players[0].score ? 1
+               : -1; // tie
+
+  const title = winner === -1 ? "It's a Tie!" : `${players[winner].name} Wins!`;
+  document.getElementById('end-title').textContent = title;
+
+  const scoresEl = document.getElementById('end-scores');
+  scoresEl.innerHTML = '';
+  players.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'end-score-card' + (i === winner ? ' winner' : '');
+    card.innerHTML = `
+      <div class="p-name">${p.name}</div>
+      <div class="p-score" style="color:${i===0?'var(--teal)':'var(--amber)'}">${p.score}</div>
+      ${i === winner ? '<div class="winner-badge">🏆 Winner</div>' : ''}
+    `;
+    scoresEl.appendChild(card);
+  });
+
+  showScreen('end-screen');
+}
+
+function goHome() {
+  showScreen('start-screen');
+}
+
+</script>
+
+<script>
+// ============================================================
+//  PWA SERVICE WORKER — enables offline play & home screen install
+// ============================================================
+if ('serviceWorker' in navigator) {
+  // Inline service worker as a blob URL so no separate file is needed
+  const swCode = `
+    const CACHE = 'crux-words-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open(CACHE).then(cache => cache.add(self.location.href))
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      // Network first for dictionary API, cache first for everything else
+      if (e.request.url.includes('dictionaryapi.dev')) {
+        e.respondWith(fetch(e.request).catch(() => new Response('[]')));
+      } else {
+        e.respondWith(
+          caches.match(e.request).then(cached => cached || fetch(e.request))
+        );
+      }
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, { scope: './' })
+    .then(() => console.log('Crux Words: Service Worker registered'))
+    .catch(err => console.log('SW registration failed (normal for file://):', err));
+}
+</script>
+
+</body>
+</html>
